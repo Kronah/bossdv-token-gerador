@@ -106,8 +106,13 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             background-color: rgba(0, 0, 0, 0.85);
-            z-index: 999;
+            z-index: 999; /* Base z-index para a maioria dos overlays */
             backdrop-filter: blur(5px); /* Efeito de blur no fundo */
+        }
+
+        /* Popups de confirmação e renovação devem ter um z-index maior para aparecerem por cima */
+        #confirmOverlay, #renewDaysOverlay {
+            z-index: 1001; /* Maior que 999 */
         }
 
         /* Popup centralizado */
@@ -121,12 +126,7 @@
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            width: 90%;
-            max-width: 450px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            z-index: 1000; /* Este z-index é para o CONTEÚDO do popup, dentro do overlay */
             animation: fadeIn 0.3s ease-out;
         }
         @keyframes fadeIn {
