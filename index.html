@@ -199,7 +199,7 @@
     // Lista de usuários autorizados
     const usuariosAutorizados = ["kronah.contas@gmail.com"];
 
-    // Garante que usuário está logado antes de carregar o resto
+    // Garante que usuário está logado antes de carregar o app
     window.onload = () => {
       firebase.auth().onAuthStateChanged(user => {
         if (!user) {
@@ -210,12 +210,10 @@
           window.location.href = "login.html";
         } else {
           document.getElementById("usuarioLogado").innerText = "👤 " + user.email;
-          // A partir daqui, todo o app funciona normalmente
         }
       });
     };
 
-    // URL base do Firebase
     const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens ";
 
     function formatarData(data) {
@@ -230,73 +228,85 @@
       });
     }
 
-   async function gerarToken() {
-  const diasValidade = parseInt(document.getElementById('dias').value) || 30;
-  const nomeInput = document.getElementById('nome');
-  const nome = nomeInput.value.trim().toUpperCase();
+    async function gerarToken() {
+      const diasValidade = parseInt(document.getElementById('dias').value) || 30;
+      const nomeInput = document.getElementById('nome');
+      const nome = nomeInput.value.trim().toUpperCase();
 
-  const output = document.getElementById('output');
+      const output = document.getElementById('output');
 
-  if (!nome) {
-    mostrarToast("Erro: O campo Nome é obrigatório.", "error");
-    return;
-  }
-
-  try {
-    // Busca pelo nome no Firebase
-    const urlBusca = `https://bossdv-72d16-default-rtdb.firebaseio.com/tokens.json?orderBy= "nome"&equalTo="${encodeURIComponent(nome)}"`;
-    const buscaNomeRes = await fetch(urlBusca);
-
-    if (!buscaNomeRes.ok) {
-      throw new Error(`Erro na requisição ao Firebase: ${buscaNomeRes.status}`);
-    }
-
-    const buscaNomeData = await buscaNomeRes.json();
-
-    console.log("Firebase - Resultado da busca:", buscaNomeData); // Debug
-
-    // Se houver dados com esse nome
-    if (buscaNomeData && Object.keys(buscaNomeData).length > 0) {
-      mostrarToast("Este nome já está cadastrado.", "error");
-      return;
-    }
-
-    // Gera token único
-    const token = gerarUUID();
-    const hoje = new Date();
-    const dataExpira = new Date(hoje.getTime() + diasValidade * 24 * 60 * 60 * 1000);
-    const expire_at = dataExpira.toISOString().split('T')[0];
-    const device_id = gerarUUID();
-
-    const tokenObj = {
-      valid: true,
-      expire_at: expire_at,
-      device_id: device_id,
-      nome: nome
-    };
-
-    // Salva no Firebase
-    const res = await fetch(`${firebaseBase}/${token}.json`, {
-      method: 'PUT',
-      body: JSON.stringify(tokenObj),
-      headers: {
-        'Content-Type': 'application/json'
+      if (!nome) {
+        mostrarToast("Erro: O campo Nome é obrigatório.", "error");
+        return;
       }
-    });
 
-    if (!res.ok) throw new Error(`Erro ao salvar no Firebase: ${res.status}`);
+      try {
+        // Busca se já existe token com esse nome
+        const urlBusca = `https://bossdv-72d16-default-rtdb.firebaseio.com/tokens.json?orderBy= "nome"&equalTo="${encodeURIComponent(nome)}"`;
+        const buscaNomeRes = await fetch(urlBusca);
 
-    // Mostra popup
-    document.getElementById('tokenDisplay').value = token;
-    document.getElementById('popupOverlay').style.display = 'block';
+        if (!buscaNomeRes.ok) {
+          throw new Error(`Erro na requisição ao Firebase: ${buscaNomeRes.status}`);
+        }
 
-    mostrarToast("Token gerado com sucesso!", "success");
+        const buscaNomeData = await buscaNomeRes.json();
 
-  } catch (e) {
-    console.error("Erro ao gerar token:", e);
-    mostrarToast("Erro ao gerar token: " + e.message, "error");
-  }
-}
+        console.log("Firebase - Resultado da busca:", buscaNomeData); // Debug
+
+        // Se encontrou algum registro com esse nome
+        if (buscaNomeData && typeof buscaNomeData === 'object') {
+          const keys = Object.keys(buscaNomeData);
+          if (keys.length > 0) {
+            mostrarToast("Este nome já está cadastrado.", "error");
+            return;
+          }
+        }
+
+        // Gera token único
+        const token = gerarUUID();
+        const hoje = new Date();
+        const dataExpira = new Date(hoje.getTime() + diasValidade * 24 * 60 * 60 * 1000);
+        const expire_at = dataExpira.toISOString().split('T')[0];
+        const device_id = gerarUUID();
+
+        const tokenObj = {
+          valid: true,
+          expire_at: expire_at,
+          device_id: device_id,
+          nome: nome
+        };
+
+        // Salva no Firebase
+        const res = await fetch(`${firebaseBase}/${token}.json`, {
+          method: 'PUT',
+          body: JSON.stringify(tokenObj),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!res.ok) throw new Error(`Erro ao salvar no Firebase: ${res.status}`);
+
+        // Mostra token gerado
+        document.getElementById('tokenDisplay').value = token;
+        document.getElementById('popupOverlay').style.display = 'block';
+
+        // Gera QR Code
+        document.getElementById("qrcode").innerHTML = "";
+        QRCode.toCanvas(token, { errorCorrectionLevel: 'H' }, function (err, canvas) {
+          if (err) return;
+          canvas.style.marginTop = "20px";
+          document.getElementById("qrcode").appendChild(canvas);
+        });
+
+        mostrarToast("Token gerado com sucesso!", "success");
+
+      } catch (e) {
+        console.error("Erro ao gerar token:", e);
+        mostrarToast("Erro ao gerar token: " + e.message, "error");
+      }
+    }
+
     function copiarToken() {
       const tokenField = document.getElementById('tokenDisplay');
       tokenField.select();
