@@ -18,16 +18,11 @@
       background: #1e1e1e;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       width: 100%;
       max-width: 300px;
       text-align: center;
     }
-    h2 {
-      color: #4caf50;
-      margin-bottom: 20px;
-    }
-    input {
+    input, button {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
@@ -37,11 +32,6 @@
     button {
       background-color: #4caf50;
       color: white;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
       cursor: pointer;
     }
     #error {
@@ -53,13 +43,11 @@
 <body>
 
   <div class="login-box">
-    <h2>Autenticação Requerida</h2>
-    <input type="email" id="email" placeholder="E-mail" />
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" />
     <input type="password" id="senha" placeholder="Senha" />
     <button onclick="login()">Entrar</button>
-    <p style="margin-top: 10px; font-size: 0.9em;">
-      Não tem conta? <a href="#" onclick="registrar()">Registrar</a>
-    </p>
+    <div id="error"></div>
   </div>
 
   <!-- Firebase SDK -->
@@ -73,38 +61,17 @@
       const senha = document.getElementById('senha').value;
 
       if (!email || !senha) {
-        alert("Digite e-mail e senha.");
+        alert("Digite email e senha.");
         return;
       }
 
       firebase.auth().signInWithEmailAndPassword(email, senha)
         .then(() => {
-          window.location.href = "index.html";
+          alert("Login bem-sucedido!");
+          location.href = "index.html";
         })
         .catch(e => {
-          if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
-            alert("Email ou senha incorretos.");
-          } else {
-            alert("Erro ao logar: " + e.message);
-          }
-        });
-    }
-
-    function registrar() {
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
-
-      if (!email || !senha) {
-        alert("Digite e-mail e senha.");
-        return;
-      }
-
-      firebase.auth().createUserWithEmailAndPassword(email, senha)
-        .then(() => {
-          alert("Conta criada com sucesso!");
-        })
-        .catch(e => {
-          alert("Erro ao criar conta: " + e.message);
+          document.getElementById("error").innerText = "Erro: " + e.message;
         });
     }
   </script>
