@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Sistema Principal</title>
+  <title>Teste de Login</title>
   <style>
     body {
       background: #121212;
@@ -11,51 +11,72 @@
       padding: 40px;
       text-align: center;
     }
-    h1 {
-      color: #4caf50;
-    }
     button {
       margin-top: 20px;
       padding: 10px 20px;
       background-color: #4caf50;
       border: none;
       border-radius: 6px;
-      color: white;
+      color: #fff;
       cursor: pointer;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      color: #90caf9;
+      text-decoration: none;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
 
-  <h1>Bem-vindo ao Sistema BossDV</h1>
-  <p>Você está autenticado como:</p>
-  <h2 id="emailUsuario"></h2>
-  <button onclick="location.href='tokens.html'">Ir para tokens</button>
+  <h1>Teste de Login Firebase</h1>
+  <p id="status">Carregando...</p>
+  <button onclick="location.href='login.html'">Ir para login</button>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js "></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js "></script>
-  <script src="../firebase-config.js"></script>
+  <script src="firebase-config.js"></script>
 
   <script>
-    const usuariosAutorizados = ["kronah.contas@gmail.com"];
+    // Aguarda Firebase carregar antes de verificar usuário
+    window.onload = () => {
+      const statusEl = document.getElementById("status");
 
-    firebase.auth().onAuthStateChanged(user => {
-      const el = document.getElementById("emailUsuario");
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          console.log("Usuário logado:", user.email);
 
-      if (user) {
-        if (usuariosAutorizados.includes(user.email)) {
-          el.innerText = user.email + " ✅";
+          // Lista de emails autorizados
+          const usuariosAutorizados = ["kronah.contas@gmail.com"];
+
+          if (usuariosAutorizados.includes(user.email)) {
+            statusEl.innerHTML = `
+              ✅ Usuário logado:<br>
+              <strong>${user.email}</strong><br><br>
+              Você pode seguir para o sistema principal.
+            `;
+            // Redirecione pra página principal após 3 segundos
+            setTimeout(() => {
+              window.location.href = "index_principal.html"; // Substitua pelo seu index real
+            }, 3000);
+          } else {
+            statusEl.innerText = "❌ Acesso negado. Contate o administrador.";
+            firebase.auth().signOut();
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 3000);
+          }
         } else {
-          alert("⚠️ Acesso negado. Contate o administrador.");
-          firebase.auth().signOut();
-          location.href = "login.html";
+          statusEl.innerText = "❌ Nenhum usuário logado.";
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 3000);
         }
-      } else {
-        alert("❌ Nenhum usuário logado.");
-        location.href = "login.html";
-      }
-    });
+      });
+    };
   </script>
 
 </body>
