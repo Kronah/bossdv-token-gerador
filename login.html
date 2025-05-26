@@ -53,12 +53,12 @@
 <body>
 
   <div class="login-box">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email" />
+    <h2>Autenticação Requerida</h2>
+    <input type="email" id="email" placeholder="E-mail" />
     <input type="password" id="senha" placeholder="Senha" />
     <button onclick="login()">Entrar</button>
-    <p style="margin-top: 10px;">
-      <a href="index.html">Entrar como visitante</a>
+    <p style="margin-top: 10px; font-size: 0.9em;">
+      Não tem conta? <a href="#" onclick="registrar()">Registrar</a>
     </p>
   </div>
 
@@ -73,13 +73,39 @@
       const senha = document.getElementById('senha').value;
 
       if (!email || !senha) {
-        alert("Digite email e senha.");
+        alert("Digite e-mail e senha.");
         return;
       }
 
       firebase.auth().signInWithEmailAndPassword(email, senha)
-        .then(() => window.location.href = "index.html")
-        .catch(e => document.getElementById('error').innerText = "Erro: " + e.message);
+        .then(() => {
+          window.location.href = "index.html";
+        })
+        .catch(e => {
+          if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+            alert("Email ou senha incorretos.");
+          } else {
+            alert("Erro ao logar: " + e.message);
+          }
+        });
+    }
+
+    function registrar() {
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value;
+
+      if (!email || !senha) {
+        alert("Digite e-mail e senha.");
+        return;
+      }
+
+      firebase.auth().createUserWithEmailAndPassword(email, senha)
+        .then(() => {
+          alert("Conta criada com sucesso!");
+        })
+        .catch(e => {
+          alert("Erro ao criar conta: " + e.message);
+        });
     }
   </script>
 
