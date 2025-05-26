@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tokens Ativos - BossDV</title>
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      color: #4caf50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+      text-align: left;
+    }
+    th {
+      background-color: #1e1e1e;
+    }
+    tr:hover {
+      background-color: #222;
+    }
+    .btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-right: 5px;
+    }
+    .btn.excluir {
+      background-color: #e53935;
+      color: white;
+    }
+    .btn.renovar {
+      background-color: #4caf50;
+      color: #121212;
+    }
+    button {
+      background-color: #4caf50;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    a {
+      display: block;
+      margin-top: 20px;
+      color: #90caf9;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tokens Ativos</h1>
+  <button onclick="window.location.href='index.html'">Voltar</button>
+
+  <table id="tokensTable">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Expira em</th>
+        <th>Token</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <a href="exportar.html">Exportar Todos os Tokens</a>
+
+  <script>
+    const auth = localStorage.getItem("auth");
+    if (auth !== "true") window.location.href = "login.html";
+
+    const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens ";
+
+    async function carregarTokens() {
+      const tbody = document.querySelector("#tokensTable tbody");
+
+      try {
+        const res = await fetch(firebaseBase + ".json");
+        const data = await res.json();
+
+        tbody.innerHTML = "";
+
+        if (!data || Object.keys(data).length === 0) {
+          tbody.innerHTML = "<tr><td colspan='4'>Nenhum token encontrado.</td></tr>";
+          return;
+        }
+
+        let encontrados = false;
+
+        for (const token in data) {
+          const item = data[token];
+
+          if (
+            item &&
+            item.valid === true &&
+            item.expire_at &&
+            new Date(item.expire_at) > new Date()
+          ) {
+            encontrados = true;
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.nome || "-"}</td>
+              <td>${item.expire_at}</td>
+              <td><small title="${token}">${token.substring(0, 10)}...</small></td>
+              <td>
+                <button class="btn renovar" onclick='renovarToken("${token}")'>Renovar</button>
+                <button class="btn excluir" onclick='excluirToken("${token}")'>Excluir</button>
+              </td>
+            `;
+            tbody.appendChild(row);
+          }
+        }
+
+        if (!encontrados) {
+          tbody.innerHTML = "<tr><td colspan='4'>Nenhum token ativo encontrado.</td></tr>";
+        }
+
+      } catch (e) {
+        console.error("Erro ao carregar tokens:", e);
+        tbody.innerHTML = "<tr><td colspan='4'>Erro ao carregar tokens.</td></tr>";
+      }
+    }
+
+    async function excluirToken(token) {
+      if (!confirm("Tem certeza que deseja excluir este token?")) return;
+
+      try {
+        const res = await fetch(`${firebaseBase}/${token}.json`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) throw new Error("Erro ao excluir token.");
+
+        alert("Token excluído com sucesso!");
+        carregarTokens();
+      } catch (e) {
+        alert("Erro ao excluir token: " + e.message);
+      }
+    }
+
+    async function renovarToken(token) {
+      const diasValidade = prompt("Quantos dias quer adicionar?", "30");
+
+      if (!diasValidade || isNaN(diasValidade) || parseInt(diasValidade) <= 0) {
+        alert("Número de dias inválido.");
+        return;
+      }
+
+      const hoje = new Date();
+      const dataExpira = new Date(hoje.getTime() + parseInt(diasValidade) * 24 * 60 * 60 * 1000);
+      const expire_at = dataExpira.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      try {
+        const res = await fetch(`${firebaseBase}/${token}.json`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ expire_at })
+        });
+
+        if (!res.ok) throw new Error("Erro ao renovar token.");
+
+        alert(`Token renovado. Nova validade: ${expire_at}`);
+        carregarTokens();
+      } catch (e) {
+        alert("Erro ao renovar token: " + e.message);
+      }
+    }
+
+    window.onload = carregarTokens;
+  </script>
+
+</body>
+</html>
