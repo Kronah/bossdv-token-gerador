@@ -289,26 +289,6 @@
     mostrarToast("Erro ao gerar token: " + e.message, "error");
   }
 }
-        if (!res.ok) throw new Error(`Erro ao salvar no Firebase: ${res.status}`);
-
-        document.getElementById('tokenDisplay').value = token;
-        document.getElementById('popupOverlay').style.display = 'block';
-
-        // Gera QR Code
-        document.getElementById("qrcode").innerHTML = "";
-        QRCode.toCanvas(token, { errorCorrectionLevel: 'H' }, function (err, canvas) {
-          if (err) return;
-          canvas.style.marginTop = "20px";
-          document.getElementById("qrcode").appendChild(canvas);
-        });
-
-        mostrarToast("Token gerado com sucesso!", "success");
-
-      } catch (e) {
-        console.error('Erro:', e);
-        mostrarToast("Erro ao gerar token: " + e.message, "error");
-      }
-    }
 
     function copiarToken() {
       const tokenField = document.getElementById('tokenDisplay');
