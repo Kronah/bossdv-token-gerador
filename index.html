@@ -127,6 +127,10 @@
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             z-index: 1000; /* Este z-index é para o CONTEÚDO do popup, dentro do overlay */
+            display: flex; /* Mantido flex */
+            flex-direction: column; /* Mantido column */
+            align-items: center; /* NOVO: Centraliza itens horizontalmente */
+            gap: 15px;
             animation: fadeIn 0.3s ease-out;
         }
         @keyframes fadeIn {
@@ -143,7 +147,7 @@
         }
 
         .popup textarea {
-            width: 100%;
+            width: 100%; /* Ocupa a largura total do popup */
             min-height: 80px;
             padding: 12px;
             font-family: 'Inter', monospace;
@@ -161,6 +165,8 @@
             color: var(--text-light);
             box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4); /* Sombra verde */
             margin-top: 10px;
+            width: fit-content; /* NOVO: Ajusta a largura do botão ao conteúdo */
+            padding: 12px 25px; /* NOVO: Aumenta o padding para um visual melhor */
         }
         .popup button:hover {
             background-color: #43a047; /* Alterado para verde */
@@ -180,8 +186,6 @@
             color: var(--text-muted);
             user-select: none;
         }
-
-        /* Removido o estilo para #navegacao, pois a div será removida */
 
         #usuarioLogado {
             position: absolute;
