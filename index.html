@@ -243,15 +243,20 @@
   }
 
   try {
-    // Verifica se o nome já existe no Firebase
+    // Busca pelo nome no Firebase
     const urlBusca = `https://bossdv-72d16-default-rtdb.firebaseio.com/tokens.json?orderBy= "nome"&equalTo="${encodeURIComponent(nome)}"`;
     const buscaNomeRes = await fetch(urlBusca);
 
-    if (!buscaNomeRes.ok) throw new Error(`Erro na requisição ao Firebase: ${buscaNomeRes.status}`);
+    if (!buscaNomeRes.ok) {
+      throw new Error(`Erro na requisição ao Firebase: ${buscaNomeRes.status}`);
+    }
 
     const buscaNomeData = await buscaNomeRes.json();
 
-    if (buscaNomeData && typeof buscaNomeData === 'object' && Object.keys(buscaNomeData).length > 0) {
+    console.log("Firebase - Resultado da busca:", buscaNomeData); // Debug
+
+    // Se houver dados com esse nome
+    if (buscaNomeData && Object.keys(buscaNomeData).length > 0) {
       mostrarToast("Este nome já está cadastrado.", "error");
       return;
     }
@@ -270,6 +275,7 @@
       nome: nome
     };
 
+    // Salva no Firebase
     const res = await fetch(`${firebaseBase}/${token}.json`, {
       method: 'PUT',
       body: JSON.stringify(tokenObj),
@@ -280,16 +286,17 @@
 
     if (!res.ok) throw new Error(`Erro ao salvar no Firebase: ${res.status}`);
 
+    // Mostra popup
     document.getElementById('tokenDisplay').value = token;
     document.getElementById('popupOverlay').style.display = 'block';
+
     mostrarToast("Token gerado com sucesso!", "success");
 
   } catch (e) {
-    console.error('Erro:', e);
+    console.error("Erro ao gerar token:", e);
     mostrarToast("Erro ao gerar token: " + e.message, "error");
   }
 }
-
     function copiarToken() {
       const tokenField = document.getElementById('tokenDisplay');
       tokenField.select();
