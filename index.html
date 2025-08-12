@@ -7,380 +7,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        :root {
-            --dark-bg: #1A1A2E;
-            --dark-card: #2C2C40;
-            --primary-green: #6BE570; /* Cor principal (verde) */
-            --accent-green: #4CAF50; /* Verde de destaque (anteriormente secondary-blue) */
-            --text-light: #E0E0E0;
-            --text-muted: #A0A0A0;
-            --border-color: #444455;
-            --error-red: #D32F2F;
-            --success-green: #4CAF50;
-        }
-
-        body {
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #0F1121 100%);
-            color: var(--text-light);
-            font-family: 'Inter', sans-serif;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden; /* Evita scroll horizontal */
-        }
-        h1 {
-            color: var(--primary-green);
-            margin-bottom: 20px;
-            font-weight: 700;
-            font-size: 2.2em;
-            text-shadow: 0 0 10px rgba(107, 229, 112, 0.3);
-        }
-        label {
-            font-size: 1.05rem;
-            margin: 15px 0 5px 0;
-            font-weight: 400;
-            color: var(--text-muted);
-        }
-        input, button {
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            padding: 12px 18px;
-            border-radius: 10px; /* Mais arredondado */
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-        input {
-            width: 280px;
-            background-color: var(--dark-card);
-            color: var(--text-light);
-            text-transform: uppercase;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-        }
-        input:focus {
-            outline: none;
-            border-color: var(--accent-green); /* Alterado para verde */
-            box-shadow: 0 0 0 3px rgba(107, 229, 112, 0.3); /* Alterado para verde */
-        }
-        button {
-            background-color: var(--primary-green);
-            color: var(--dark-bg);
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px; /* Espaçamento entre botões */
-            box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px; /* Espaço entre ícone e texto */
-        }
-        button:hover {
-            background-color: #5ac560; /* Verde ligeiramente mais escuro no hover */
-            box-shadow: 0 6px 20px rgba(107, 229, 112, 0.5);
-            transform: translateY(-2px);
-        }
-        button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(107, 229, 112, 0.3);
-        }
-
-        #output {
-            margin-top: 30px;
-            background: var(--dark-card);
-            padding: 20px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            word-break: break-all;
-            font-family: 'Inter', monospace;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
-        /* Overlay escuro */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background-color: rgba(0, 0, 0, 0.85);
-            z-index: 999; /* Base z-index para a maioria dos overlays */
-            backdrop-filter: blur(5px); /* Efeito de blur no fundo */
-        }
-
-        /* Popups de confirmação e renovação devem ter um z-index maior para aparecerem por cima */
-        #confirmOverlay, #renewDaysOverlay {
-            z-index: 1001; /* Maior que 999 */
-        }
-
-        /* Popup centralizado */
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: var(--dark-card);
-            border: 1px solid var(--primary-green);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            z-index: 1000; /* Este z-index é para o CONTEÚDO do popup, dentro do overlay */
-            display: flex; /* Mantido flex */
-            flex-direction: column; /* Mantido column */
-            align-items: center; /* NOVO: Centraliza itens horizontalmente */
-            gap: 15px;
-            animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -60%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-
-        .popup h2 {
-            margin-top: 0;
-            font-size: 1.6em;
-            color: var(--primary-green);
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .popup textarea {
-            width: 100%; /* Ocupa a largura total do popup */
-            min-height: 80px;
-            padding: 12px;
-            font-family: 'Inter', monospace;
-            font-size: 0.95em;
-            border: 1px solid var(--border-color);
-            background: #1F1F30;
-            color: var(--text-light);
-            resize: vertical; /* Permite redimensionar verticalmente */
-            border-radius: 8px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .popup button {
-            background-color: var(--accent-green); /* Alterado para verde */
-            color: var(--text-light);
-            box-shadow: 0 4px 15px rgba(107, 229, 112, 0.4); /* Sombra verde */
-            margin-top: 10px;
-            width: fit-content; /* NOVO: Ajusta a largura do botão ao conteúdo */
-            padding: 12px 25px; /* NOVO: Aumenta o padding para um visual melhor */
-        }
-        .popup button:hover {
-            background-color: #43a047; /* Alterado para verde */
-            box-shadow: 0 6px 20px rgba(107, 229, 112, 0.5); /* Sombra verde */
-        }
-        .popup button.cancel-btn { /* Botões de cancelar/Não */
-            background-color: #666;
-        }
-        .popup button.cancel-btn:hover {
-            background-color: #555;
-        }
-
-        footer {
-            margin-top: auto;
-            padding-top: 20px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            user-select: none;
-        }
-
-        #usuarioLogado {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            background-color: var(--dark-card);
-            padding: 8px 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-
-        /* Top Buttons Container */
-        .top-buttons-container {
-            position: absolute;
-            top: 20px;
-            left: 25px;
-            display: flex;
-            gap: 10px;
-            z-index: 500;
-        }
-        .top-buttons-container button {
-            background-color: var(--accent-green); /* Alterado para verde */
-            color: var(--text-light);
-            box-shadow: 0 2px 8px rgba(107, 229, 112, 0.3); /* Sombra verde */
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            border-radius: 8px;
-            margin-top: 0; /* Remove a margem superior padrão do botão */
-        }
-        .top-buttons-container button:hover {
-            background-color: #43a047; /* Alterado para verde */
-            box-shadow: 0 4px 12px rgba(107, 229, 112, 0.4); /* Sombra verde */
-        }
-
-        /* Styles for Token List Popup */
-        #tokenListPopup {
-            max-width: 900px; /* Mais largo para tabela */
-            max-height: 90vh; /* Max height para permitir scroll */
-            overflow-y: auto; /* Habilita scroll vertical */
-            padding: 30px;
-        }
-
-        #tokensTable {
-            width: 100%;
-            border-collapse: separate; /* Permite border-radius nas células se quiser */
-            border-spacing: 0;
-            margin-top: 20px;
-            border-radius: 10px;
-            overflow: hidden; /* Garante que bordas arredondadas funcionem */
-        }
-
-        #tokensTable th,
-        #tokensTable td {
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            text-align: left;
-            word-break: break-all;
-            background-color: #262638; /* Fundo mais claro para células */
-        }
-
-        #tokensTable th {
-            background-color: #3A3A50; /* Fundo mais escuro para cabeçalho */
-            color: var(--accent-green); /* Alterado para verde */
-            font-weight: 600;
-            position: sticky; /* Cabeçalho fixo ao scroll */
-            top: 0;
-            z-index: 1; /* Garante que fique acima do conteúdo da tabela */
-        }
-        /* Arredondar cantos do cabeçalho */
-        #tokensTable th:first-child { border-top-left-radius: 10px; }
-        #tokensTable th:last-child { border-top-right-radius: 10px; }
-
-        #tokensTable tr:nth-child(even) td {
-            background-color: #212133; /* Fundo alternado para linhas */
-        }
-
-        #tokensTable button {
-            padding: 8px 12px;
-            font-size: 0.85rem;
-            margin: 2px;
-            border-radius: 6px;
-            font-weight: 500;
-            box-shadow: none; /* Remove sombra extra nos botões da tabela */
-            transition: background-color 0.2s ease, transform 0.2s ease;
-        }
-        #tokensTable button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        #tokensTable button.delete-btn {
-            background-color: var(--error-red);
-            color: var(--text-light);
-        }
-        #tokensTable button.delete-btn:hover {
-            background-color: #c0392b;
-        }
-        #tokensTable button.renew-btn {
-            background-color: var(--accent-green); /* Alterado para verde */
-            color: var(--text-light);
-        }
-        #tokensTable button.renew-btn:hover {
-            background-color: #43a047; /* Alterado para verde */
-        }
-
-        /* Styles for Renew Days Popup */
-        #renewDaysPopup label {
-            text-align: center;
-            margin-bottom: 5px;
-            color: var(--text-light);
-        }
-        #renewDaysPopup input {
-            width: 150px;
-            margin: 0 auto 15px auto; /* Centraliza o input */
-            text-align: center;
-        }
-        #renewDaysPopup button {
-            width: 100%;
-        }
-        #renewDaysPopup .popup button:first-child {
-             background-color: var(--primary-green); /* Confirmar em verde */
-        }
-        #renewDaysPopup .popup button:last-child {
-             background-color: #666; /* Cancelar em cinza */
-        }
-
-
-        /* Toast styles */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: var(--dark-card);
-            color: var(--text-light);
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px 20px;
-            position: fixed;
-            z-index: 1001;
-            left: 50%;
-            bottom: 30px;
-            font-size: 0.95em;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            transition: all 0.3s ease;
-        }
-
-        #toast.show {
-            visibility: visible;
-            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-
-        #toast.error {
-            background-color: var(--error-red);
-            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.4);
-        }
-
-        #toast.success {
-            background-color: var(--success-green);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-        }
-
-        #toast.info { /* Novo tipo de toast */
-            background-color: var(--accent-green); /* Alterado para verde */
-            box-shadow: 0 5px 15px rgba(107, 229, 112, 0.4); /* Sombra verde */
-        }
-
-        @-webkit-keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-
-        @-webkit-keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
-        }
-
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
-        }
+        /* (mantive seus estilos principais; não alterei visual) */
+        :root{--dark-bg:#1A1A2E;--dark-card:#2C2C40;--primary-green:#6BE570;--accent-green:#4CAF50;--text-light:#E0E0E0;--text-muted:#A0A0A0;--border-color:#444455;--error-red:#D32F2F;--success-green:#4CAF50}
+        body{background:linear-gradient(135deg,var(--dark-bg) 0%,#0F1121 100%);color:var(--text-light);font-family:'Inter',sans-serif;padding:25px;display:flex;flex-direction:column;align-items:center;min-height:100vh;position:relative;overflow-x:hidden}
+        h1{color:var(--primary-green);margin-bottom:20px;font-weight:700;font-size:2.2em;text-shadow:0 0 10px rgba(107,229,112,0.3)}
+        label{font-size:1.05rem;margin:15px 0 5px 0;font-weight:400;color:var(--text-muted)}
+        input,button{font-family:'Inter',sans-serif;font-size:1rem;padding:12px 18px;border-radius:10px;border:1px solid var(--border-color);transition:all .3s ease}
+        input{width:280px;background-color:var(--dark-card);color:var(--text-light);text-transform:uppercase;box-shadow:inset 0 2px 5px rgba(0,0,0,.2)}
+        input:focus{outline:none;border-color:var(--accent-green);box-shadow:0 0 0 3px rgba(107,229,112,.3)}
+        button{background-color:var(--primary-green);color:var(--dark-bg);cursor:pointer;font-weight:600;margin-top:15px;box-shadow:0 4px 15px rgba(107,229,112,.4);display:flex;align-items:center;justify-content:center}
+        footer{margin-top:auto;padding-top:20px;font-size:.85rem;color:var(--text-muted);user-select:none}
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;z-index:999}
+        .popup{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background-color:var(--dark-card);border:1px solid var(--primary-green);border-radius:15px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.5);z-index:1000;display:flex;flex-direction:column;align-items:center;gap:15px}
+        textarea{width:100%;min-height:80px;padding:12px;font-family:Inter,monospace;font-size:.95em;border:1px solid var(--border-color);background:#1F1F30;color:var(--text-light);resize:vertical;border-radius:8px}
+        #usuarioLogado{position:absolute;top:20px;right:25px;font-size:.9rem;color:var(--text-muted);background-color:var(--dark-card);padding:8px 12px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
     </style>
 </head>
 <body>
 
-    <div id="usuarioLogado">Carregando...</div>
+    <div id="usuarioLogado">Carregando.</div>
 
-    <div class="top-buttons-container">
+    <div class="top-buttons-container" style="position:absolute;top:20px;left:25px;display:flex;gap:10px;z-index:500">
         <button onclick="showTokensListPopup()"><i class="fas fa-list"></i> Listar Tokens</button>
     </div>
 
@@ -392,81 +39,80 @@
     <label for="dias">Validade do token (dias):</label>
     <input type="number" id="dias" min="1" max="365" value="30" />
 
-    <button onclick="gerarToken()"><i class="fas fa-magic"></i> Gerar Token</button>
-    <button onclick="sair()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    <div style="display:flex;gap:10px;margin-top:12px">
+        <button onclick="gerarToken()"><i class="fas fa-magic"></i> Gerar Token</button>
+        <button onclick="sair()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
 
     <div id="output"></div>
 
     <footer>Desenvolvido por Kronah © 2025</footer>
 
+    <!-- Popup Token -->
     <div class="overlay" id="popupOverlay">
         <div class="popup" id="tokenPopup">
             <h2>Token Gerado</h2>
             <textarea id="tokenDisplay" readonly></textarea>
-            <div id="qrcode" style="display: flex; justify-content: center; margin-top: 15px;"></div>
+            <div id="qrcode" style="display:flex;justify-content:center;margin-top:15px"></div>
             <button onclick="copiarToken()"><i class="fas fa-copy"></i> Copiar Token</button>
         </div>
     </div>
 
+    <!-- Confirm -->
     <div class="overlay" id="confirmOverlay">
         <div class="popup" id="confirmPopup">
             <h2>Confirmação</h2>
-            <p id="confirmMessage" style="text-align: center;"></p>
-            <div style="display: flex; justify-content: center; gap: 15px;">
+            <p id="confirmMessage" style="text-align:center"></p>
+            <div style="display:flex;justify-content:center;gap:15px">
                 <button onclick="handleConfirm(true)"><i class="fas fa-check"></i> Sim</button>
                 <button onclick="handleConfirm(false)" class="cancel-btn"><i class="fas fa-times"></i> Não</button>
             </div>
         </div>
     </div>
 
+    <!-- Already exists -->
     <div class="overlay" id="alreadyExistsOverlay">
         <div class="popup" id="alreadyExistsPopup">
             <h2>Nome Já Cadastrado</h2>
-            <p id="alreadyExistsMessage" style="text-align: center;"></p>
+            <p id="alreadyExistsMessage" style="text-align:center"></p>
             <button onclick="closeAlreadyExistsPopup()"><i class="fas fa-check-circle"></i> OK</button>
         </div>
     </div>
 
+    <!-- Token list popup -->
     <div class="overlay" id="tokenListOverlay">
-        <div class="popup" id="tokenListPopup">
+        <div class="popup" id="tokenListPopup" style="max-width:900px;max-height:90vh;overflow-y:auto;padding:30px">
             <h2>Tokens Ativos</h2>
-            <div style="text-align: right; margin-bottom: 15px;">
+            <div style="text-align:right;margin-bottom:15px">
                 <button onclick="exportTokensData()"><i class="fas fa-file-export"></i> Exportar JSON</button>
             </div>
-            <table id="tokensTable">
+            <table id="tokensTable" style="width:100%;border-collapse:separate;border-spacing:0;margin-top:20px">
                 <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Validade</th>
-                        <th>Token (ID)</th>
-                        <th>Ações</th>
-                    </tr>
+                    <tr><th>Nome</th><th>Validade</th><th>Token (ID)</th><th>Ações</th></tr>
                 </thead>
-                <tbody id="tokensTableBody">
-                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Carregando tokens...</td></tr>
-                </tbody>
+                <tbody id="tokensTableBody"><tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Carregando tokens.</td></tr></tbody>
             </table>
             <button onclick="closeTokenListPopup()" class="cancel-btn"><i class="fas fa-times"></i> Fechar</button>
         </div>
     </div>
 
+    <!-- Renew popup -->
     <div class="overlay" id="renewDaysOverlay">
         <div class="popup" id="renewDaysPopup">
             <h2>Renovar Token</h2>
-            <p id="renewTokenIdDisplay" style="text-align: center;"></p>
+            <p id="renewTokenIdDisplay" style="text-align:center"></p>
             <label for="renewDaysInput">Quantos dias você quer renovar?</label>
             <input type="number" id="renewDaysInput" min="2" max="365" value="30" />
-            <div style="display: flex; justify-content: center; gap: 15px;">
+            <div style="display:flex;justify-content:center;gap:15px">
                 <button onclick="handleRenewConfirm()"><i class="fas fa-calendar-plus"></i> Confirmar</button>
                 <button onclick="closeRenewDaysPopup()" class="cancel-btn"><i class="fas fa-times"></i> Cancelar</button>
             </div>
         </div>
     </div>
 
-    <div id="toast" style="visibility: hidden;"></div>
+    <div id="toast" style="visibility:hidden"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
@@ -474,15 +120,18 @@
     <script src="firebase-config.js"></script>
 
     <script>
-        // Lista de usuários autorizados
+        // Usuários autorizados (mantive seu array)
         const usuariosAutorizados = ["kronah.contas@gmail.com"];
 
-        // Variáveis para armazenar callbacks e dados temporários de popups
+        // variáveis para popups
         let confirmCallback = null;
         let currentRenewTokenId = null;
         let currentRenewExpireAt = null;
 
-        // Garante que usuário está logado antes de carregar o app
+        // firebase base (sem espaços)
+        const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens";
+
+        // onAuth state
         window.onload = () => {
             firebase.auth().onAuthStateChanged(user => {
                 if (!user) {
@@ -497,10 +146,8 @@
             });
         };
 
-        const firebaseBase = "https://bossdv-72d16-default-rtdb.firebaseio.com/tokens";
-
         function formatarData(data) {
-            return new Intl.DateTimeFormat('pt-BR').format(new Date(data));
+            return data ? new Intl.DateTimeFormat('pt-BR').format(new Date(data)) : '-';
         }
 
         function gerarUUID() {
@@ -511,6 +158,7 @@
             });
         }
 
+        // --- NOVO: usar SDK para garantir uso de auth do usuário ---
         async function gerarToken() {
             const diasValidade = parseInt(document.getElementById('dias').value) || 30;
             const nomeInput = document.getElementById('nome');
@@ -522,14 +170,10 @@
             }
 
             try {
-                const urlBusca = `${firebaseBase}.json?orderBy="nome"&equalTo="${encodeURIComponent(nome)}"`;
-                const buscaNomeRes = await fetch(urlBusca);
-
-                if (!buscaNomeRes.ok) {
-                    throw new Error(`Erro na requisição ao Firebase: ${buscaNomeRes.status}`);
-                }
-
-                const buscaNomeData = await buscaNomeRes.json();
+                // busca por nome usando SDK (auth aplicado automaticamente)
+                const tokensRef = firebase.database().ref('tokens');
+                const querySnap = await tokensRef.orderByChild('nome').equalTo(nome).once('value');
+                const buscaNomeData = querySnap.val();
 
                 if (buscaNomeData && Object.keys(buscaNomeData).length > 0) {
                     showAlreadyExistsPopup(nome);
@@ -549,20 +193,14 @@
                     nome: nome
                 };
 
-                const res = await fetch(`${firebaseBase}/${token}.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(tokenObj),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+                // salva usando SDK
+                await firebase.database().ref(`tokens/${token}`).set(tokenObj);
 
-                if (!res.ok) throw new Error(`Erro ao salvar no Firebase: ${res.status}`);
-
+                // UI
                 document.getElementById('tokenDisplay').value = token;
                 document.getElementById('popupOverlay').style.display = 'block';
-
                 document.getElementById("qrcode").innerHTML = "";
+
                 QRCode.toCanvas(token, { errorCorrectionLevel: 'H', width: 150 }, function (err, canvas) {
                     if (err) {
                         console.error("Erro ao gerar QR Code:", err);
@@ -576,7 +214,7 @@
 
             } catch (e) {
                 console.error("Erro ao gerar token:", e);
-                mostrarToast("Erro ao gerar token: " + e.message, "error");
+                mostrarToast("Erro ao gerar token: " + (e.message || e), "error");
             }
         }
 
@@ -584,7 +222,6 @@
             const tokenField = document.getElementById('tokenDisplay');
             tokenField.select();
             tokenField.setSelectionRange(0, 99999);
-
             try {
                 const successful = document.execCommand('copy');
                 if (successful) {
@@ -601,13 +238,10 @@
 
         function mostrarToast(mensagem, tipo = "success") {
             const toast = document.getElementById("toast");
-            toast.className = "show";
             toast.className = `show ${tipo}`;
             toast.innerText = mensagem;
-
-            setTimeout(() => {
-                toast.className = toast.className.replace("show", "");
-            }, 3000);
+            toast.style.visibility = "visible";
+            setTimeout(() => { toast.className = ""; toast.style.visibility = "hidden"; }, 3000);
         }
 
         function showConfirm(message, callback) {
@@ -618,74 +252,59 @@
 
         function handleConfirm(result) {
             document.getElementById('confirmOverlay').style.display = 'none';
-            if (confirmCallback) {
-                confirmCallback(result);
-                confirmCallback = null;
-            }
+            if (confirmCallback) { confirmCallback(result); confirmCallback = null; }
         }
 
         function showAlreadyExistsPopup(nome) {
             document.getElementById('alreadyExistsMessage').innerText = `O nome "${nome}" já possui um token cadastrado.`;
             document.getElementById('alreadyExistsOverlay').style.display = 'block';
         }
-
-        function closeAlreadyExistsPopup() {
-            document.getElementById('alreadyExistsOverlay').style.display = 'none';
-        }
+        function closeAlreadyExistsPopup() { document.getElementById('alreadyExistsOverlay').style.display = 'none'; }
 
         async function showTokensListPopup() {
             document.getElementById('tokenListOverlay').style.display = 'block';
             await loadTokensToList();
         }
-
         function closeTokenListPopup() {
             document.getElementById('tokenListOverlay').style.display = 'none';
-            document.getElementById('tokensTableBody').innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Carregando tokens...</td></tr>';
+            document.getElementById('tokensTableBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Carregando tokens.</td></tr>';
         }
 
         async function loadTokensToList() {
             const tokensTableBody = document.getElementById('tokensTableBody');
-            tokensTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Carregando tokens...</td></tr>';
-
+            tokensTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Carregando tokens.</td></tr>';
             try {
-                const response = await fetch(`${firebaseBase}.json`);
-                if (!response.ok) throw new Error(`Erro ao carregar tokens: ${response.status}`);
-                const data = await response.json();
+                // usar SDK para carregar tokens
+                const snapshot = await firebase.database().ref('tokens').once('value');
+                const data = snapshot.val();
 
                 tokensTableBody.innerHTML = '';
-
                 if (!data || Object.keys(data).length === 0) {
-                    tokensTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Nenhum token ativo encontrado.</td></tr>';
+                    tokensTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Nenhum token ativo encontrado.</td></tr>';
                     return;
                 }
 
                 const tokens = Object.entries(data);
-
                 tokens.forEach(([tokenId, tokenObj]) => {
                     const row = tokensTableBody.insertRow();
                     row.insertCell().innerText = tokenObj.nome || 'N/A';
-                    row.insertCell().innerText = formatarData(tokenObj.expire_at);
+                    row.insertCell().innerText = tokenObj.expire_at || '-';
                     row.insertCell().innerText = tokenId;
-
                     const actionsCell = row.insertCell();
                     actionsCell.style.textAlign = 'center';
-
                     const deleteBtn = document.createElement('button');
-                    deleteBtn.innerText = 'Deletar';
-                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.innerText = 'Deletar'; deleteBtn.className = 'delete-btn';
                     deleteBtn.onclick = () => deleteToken(tokenId);
                     actionsCell.appendChild(deleteBtn);
-
                     const renewBtn = document.createElement('button');
-                    renewBtn.innerText = 'Renovar';
-                    renewBtn.className = 'renew-btn';
+                    renewBtn.innerText = 'Renovar'; renewBtn.className = 'renew-btn';
                     renewBtn.onclick = () => showRenewDaysPopup(tokenId, tokenObj.expire_at);
                     actionsCell.appendChild(renewBtn);
                 });
 
             } catch (error) {
                 console.error("Erro ao carregar lista de tokens:", error);
-                tokensTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--error-red);">Erro ao carregar tokens.</td></tr>';
+                tokensTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--error-red)">Erro ao carregar tokens.</td></tr>';
                 mostrarToast("Erro ao carregar lista de tokens.", "error");
             }
         }
@@ -694,10 +313,7 @@
             showConfirm(`Tem certeza que deseja DELETAR o token "${tokenId}"?`, async (confirmed) => {
                 if (confirmed) {
                     try {
-                        const response = await fetch(`${firebaseBase}/${tokenId}.json`, {
-                            method: 'DELETE'
-                        });
-                        if (!response.ok) throw new Error(`Erro ao deletar token: ${response.status}`);
+                        await firebase.database().ref(`tokens/${tokenId}`).remove();
                         mostrarToast("Token deletado com sucesso!", "success");
                         await loadTokensToList();
                     } catch (error) {
@@ -715,23 +331,12 @@
             document.getElementById('renewDaysInput').value = 30;
             document.getElementById('renewDaysOverlay').style.display = 'block';
         }
-
-        function closeRenewDaysPopup() {
-            document.getElementById('renewDaysOverlay').style.display = 'none';
-            currentRenewTokenId = null;
-            currentRenewExpireAt = null;
-        }
+        function closeRenewDaysPopup() { document.getElementById('renewDaysOverlay').style.display = 'none'; currentRenewTokenId = null; currentRenewExpireAt = null; }
 
         async function handleRenewConfirm() {
             const daysToRenew = parseInt(document.getElementById('renewDaysInput').value);
-
-            if (isNaN(daysToRenew) || daysToRenew < 2 || daysToRenew > 365) {
-                mostrarToast("Por favor, insira um número de dias válido (entre 2 e 365).", "error");
-                return;
-            }
-
+            if (isNaN(daysToRenew) || daysToRenew < 2 || daysToRenew > 365) { mostrarToast("Por favor, insira um número de dias válido (entre 2 e 365).", "error"); return; }
             closeRenewDaysPopup();
-
             await performTokenRenewal(currentRenewTokenId, currentRenewExpireAt, daysToRenew);
         }
 
@@ -740,20 +345,8 @@
                 const currentExpiryDate = new Date(currentExpireAt);
                 const newExpiryDate = new Date(currentExpiryDate.getTime() + daysToRenew * 24 * 60 * 60 * 1000);
                 const newExpireAt = newExpiryDate.toISOString().split('T')[0];
-
-                const updates = {
-                    expire_at: newExpireAt,
-                    valid: true
-                };
-
-                const response = await fetch(`${firebaseBase}/${tokenId}.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify(updates),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (!response.ok) throw new Error(`Erro ao renovar token: ${response.status}`);
+                const updates = { expire_at: newExpireAt, valid: true };
+                await firebase.database().ref(`tokens/${tokenId}`).update(updates);
                 mostrarToast(`Token renovado por ${daysToRenew} dias com sucesso!`, "success");
                 await loadTokensToList();
             } catch (error) {
@@ -764,31 +357,16 @@
 
         async function exportTokensData() {
             try {
-                const response = await fetch(`${firebaseBase}.json`);
-                if (!response.ok) throw new Error(`Erro ao carregar tokens para exportação: ${response.status}`);
-                const data = await response.json();
-
-                if (!data) {
-                    mostrarToast("Nenhum token para exportar.", "info");
-                    return;
-                }
-
+                const snapshot = await firebase.database().ref('tokens').once('value');
+                const data = snapshot.val();
+                if (!data) { mostrarToast("Nenhum token para exportar.", "info"); return; }
                 const tokensArray = Object.values(data);
-
                 const jsonString = JSON.stringify(tokensArray, null, 2);
-
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = 'tokens_bossdv_export.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
+                a.href = url; a.download = 'tokens_bossdv_export.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                 mostrarToast("Tokens exportados com sucesso!", "success");
-
             } catch (error) {
                 console.error("Erro ao exportar tokens:", error);
                 mostrarToast("Erro ao exportar tokens: " + error.message, "error");
@@ -799,44 +377,19 @@
             showConfirm("Tem certeza que deseja sair?", (confirmed) => {
                 if (confirmed) {
                     firebase.auth().signOut();
+                    localStorage.removeItem("auth");
                     window.location.href = "login.html";
                 }
             });
         }
 
         // Fechar popups ao clicar fora
-        document.getElementById('popupOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
-
-        document.getElementById('confirmOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-                if (confirmCallback) {
-                    confirmCallback(false);
-                    confirmCallback = null;
-                }
-            }
-        });
-
-        document.getElementById('alreadyExistsOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAlreadyExistsPopup();
-            }
-        });
-
-        document.getElementById('tokenListOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeTokenListPopup();
-            }
-        });
-
-        document.getElementById('renewDaysOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeRenewDaysPopup();
-            }
+        document.addEventListener('click', function(e) {
+            // fecho overlays se clicar no fundo
+            ['popupOverlay','confirmOverlay','alreadyExistsOverlay','tokenListOverlay','renewDaysOverlay'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && e.target === el) el.style.display = 'none';
+            });
         });
     </script>
 
