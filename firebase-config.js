@@ -1,8 +1,8 @@
-// firebase-config.js
+// firebase-config.js (corrigido)
 const firebaseConfig = {
   apiKey: "AIzaSyDVwW_stGdkYpArCLjqsDbBsUiaSihGsUE",
   authDomain: "bossdv-72d16.firebaseapp.com",
-  databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com ",
+  databaseURL: "https://bossdv-72d16-default-rtdb.firebaseio.com",
   projectId: "bossdv-72d16",
   storageBucket: "bossdv-72d16.appspot.com",
   messagingSenderId: "141528827265",
